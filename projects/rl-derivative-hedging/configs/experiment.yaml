@@ -1,0 +1,22 @@
+market:
+  spot: 100.0
+  strike: 100.0
+  maturity: 1.0
+  rate: 0.0
+  dividend: 0.0
+  drift: 0.0
+  volatility: 0.20
+  steps: 30
+  transaction_cost: 0.001
+portfolio:
+  option_quantity: -1.0
+  initial_cash: null
+environment:
+  max_inventory: 2.0
+  reward_scale: 1.0
+  discrete_actions:  nine
+experiment:
+  seed: 7
+  train_episodes: 5000
+  test_episodes: 2000
+  volatility_regimes: [0.10, 0.20, 0.40]
