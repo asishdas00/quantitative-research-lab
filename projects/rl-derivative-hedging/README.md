@@ -42,8 +42,10 @@ The default illustrative regimes are 10%, 20%, and 40% annualized volatility. Th
 - `src/rl_hedging/baselines.py`: no-hedge and delta-hedge policies.
 - `src/rl_hedging/metrics.py`: terminal risk and cost metrics.
 - `src/rl_hedging/experiments.py`: common-path benchmark runner.
+- `src/rl_hedging/evaluation.py`: held-out RL policy evaluator.
 - `scripts/run_baselines.py`: run reproducible classical benchmarks.
-- `scripts/train_rl.py`: train PPO or SAC; optional DQN uses discrete target inventories.
+- `scripts/train_rl.py`: train PPO, SAC or DQN.
+- `scripts/evaluate_rl.py`: compare a saved RL model with both classical benchmarks on held-out paths.
 - `tests/`: pricing, simulation and ledger checks.
 
 ## Setup
@@ -73,7 +75,15 @@ python scripts/train_rl.py --algo SAC --timesteps 100000 --volatility 0.20
 python scripts/train_rl.py --algo DQN --timesteps 100000 --volatility 0.20
 ```
 
-The DQN environment uses a finite set of target share inventories. PPO and SAC use a continuous target inventory in [-2, 2] shares. Model performance must be evaluated on fresh paths using the same benchmark path set; training returns are not reported as test performance.
+The DQN environment uses a finite nine-point target-inventory grid. PPO and SAC use a continuous target inventory in [-2, 2] shares. Evaluate a saved model on held-out paths with, for example: `python scripts/evaluate_rl.py --algo PPO --model models/ppo_sigma_0.20`. The evaluator reports no-hedge and delta-hedge results on the same test paths. Training returns are not reported as test performance.
+
+## Run tests
+
+Run from this project directory after installation.
+
+```bash
+pytest -q
+```
 
 ## Tests
 
