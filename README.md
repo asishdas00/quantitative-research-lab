@@ -1,124 +1,85 @@
-# FinBERT: Financial Sentiment Analysis with BERT
+# Quantitative Research Lab
 
----
-## ⚠️ **IMPORTANT LICENSING NOTICE**
+A research workspace for financial machine learning, natural language processing, and data-driven analysis of financial markets.
 
-**Effective Date**: 12 October 2026
+This repository currently contains an implementation and supporting materials for **FinBERT**, a BERT-based model for classifying sentiment in financial text. The upstream project and model are credited below. This repository is a fork/adaptation workspace; original implementation details remain attributable to their respective authors.
 
-### **What the Apache-2.0 License Covers**
-The Apache-2.0 license in this repository applies **ONLY to the training 
-code, scripts, and notebooks** contained in this repository. 
+## Project focus
 
-**The Apache-2.0 license does NOT cover**:
-- The **pre-trained model weights** (hosted on Hugging Face)
-- The **training dataset** (Financial PhraseBank)
+- Financial text preprocessing and sentiment classification
+- Using pretrained transformer models for financial language
+- Producing positive, negative, and neutral sentiment predictions
+- Exploring how text-derived signals can support quantitative research
 
-### **Licensor**
-The code in this repository is licensed by **MIH AI B.V.** under the 
-Apache License, Version 2.0.
+## FinBERT
 
-### **Model Weights**
-The pre-trained FinBERT model weights are available on Hugging Face. 
-Please review the **[model card on Hugging Face](https://huggingface.co/ProsusAI/finbert)** 
-for licensing terms and restrictions that apply to the model weights.
+FinBERT is a pretrained language model adapted to financial text. The upstream model is published by Prosus AI:
 
-### **Training Data**
-This model was trained using the Financial PhraseBank dataset, which has 
-its own licensing terms. Users are solely responsible for ensuring 
-compliance with any third-party data licenses.
+- **Model:** [ProsusAI/finbert on Hugging Face](https://huggingface.co/ProsusAI/finbert)
+- **Original code repository:** [ProsusAI/finBERT](https://github.com/ProsusAI/finBERT)
+- **Research paper:** [FinBERT: Financial Sentiment Analysis with Pre-trained Language Models](https://arxiv.org/abs/1908.10063)
 
-### **No Warranty**
-This project is provided "AS IS" without warranty of any kind. This is 
-not an official Prosus product.
+The model produces sentiment classes for financial text. Review the upstream model card for supported usage and model-specific terms before using its weights.
 
----
+## Repository contents
 
-FinBERT sentiment analysis model is now available on Hugging Face model hub. You can get the model [here](https://huggingface.co/ProsusAI/finbert). 
+| Path | Purpose |
+| --- | --- |
+| `finbert/` | FinBERT-related source package |
+| `notebooks/` | Research and experimentation notebooks |
+| `scripts/` | Utility and model workflow scripts |
+| `environment.yml` | Conda environment specification |
+| `config.json` | Project configuration |
+| `examples.csv`, `test.txt` | Example input data |
 
-FinBERT is a pre-trained NLP model to analyze sentiment of financial text. It is built by further training
- the [BERT](https://arxiv.org/pdf/1810.04805.pdf) language model in the finance domain, using a large financial corpus and thereby fine-tuning
-  it for financial sentiment classification. For the details, please see 
-  [FinBERT: Financial Sentiment Analysis with Pre-trained Language Models](https://arxiv.org/pdf/1908.10063.pdf).
+## Setup
 
-## Installing
- Install the dependencies by creating the Conda environment `finbert` from the given `environment.yml` file and
- activating it.
+Create and activate the Conda environment:
+
 ```bash
 conda env create -f environment.yml
 conda activate finbert
 ```
 
-## Models
+Inspect the scripts and notebooks for the available workflows and required input formats. Model downloads and dataset preparation may require internet access and separate dataset permissions.
 
-### Pre-trained Model Weights
+## Example: load the pretrained model
 
-Pre-trained FinBERT model weights are available on Hugging Face:
-
-**🔗 [https://huggingface.co/ProsusAI/finbert](https://huggingface.co/ProsusAI/finbert)**
-
-Please review the model card for licensing terms and usage restrictions 
-before downloading or using the model weights.
-
-The code in this repository loads the model directly from Hugging Face by its id:
 ```python
-from transformers import AutoModelForSequenceClassification
-model = AutoModelForSequenceClassification.from_pretrained('ProsusAI/finbert')
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
+model_id = "ProsusAI/finbert"
+tokenizer = AutoTokenizer.from_pretrained(model_id)
+model = AutoModelForSequenceClassification.from_pretrained(model_id)
+
+text = "The company reported stronger-than-expected quarterly earnings."
+inputs = tokenizer(text, return_tensors="pt", truncation=True)
+outputs = model(**inputs)
 ```
-To use a model you trained yourself, pass its local directory instead of `'ProsusAI/finbert'`.
 
-## Datasets
-There are two datasets used for FinBERT. The language model further training is done on a subset of Reuters TRC2 
-dataset. This dataset is not public, but researchers can apply for access 
-[here](https://trec.nist.gov/data/reuters/reuters.html).
+This example loads the upstream pretrained model. It is an inference example, not a claim that this repository independently trained or validated the model.
 
-For the sentiment analysis, we used Financial PhraseBank from [Malo et al. (2014)](https://www.researchgate.net/publication/251231107_Good_Debt_or_Bad_Debt_Detecting_Semantic_Orientations_in_Economic_Texts).
- The dataset can be downloaded from this [link](https://www.researchgate.net/profile/Pekka_Malo/publication/251231364_FinancialPhraseBank-v10/data/0c96051eee4fb1d56e000000/FinancialPhraseBank-v10.zip?origin=publication_list).
- If you want to train the model on the same dataset, after downloading it, you should create three files under the 
- `data/sentiment_data` folder as `train.csv`, `validation.csv`, `test.csv`. 
-To create these files, do the following steps:
-- Download the Financial PhraseBank from the above link.
-- Get the path of `Sentences_50Agree.txt` file in the `FinancialPhraseBank-v1.0` zip.
-- Run the [datasets script](scripts/datasets.py):
-```python scripts/datasets.py --data_path <path to Sentences_50Agree.txt>```
+## Research notes and extensions
 
-## Training the model
-Training is done in `finbert_training.ipynb` notebook. Training starts from `bert-base-uncased` by default; you can
- set `bm` in the notebook to your own further pre-trained language model instead. The trained model will
- be saved to `models/classifier_model/finbert-sentiment`. You can find the training parameters in the notebook as follows:
-```python
-config = Config(   data_dir=cl_data_path,
-                   bert_model=bertmodel,
-                   num_train_epochs=4.0,
-                   model_dir=cl_path,
-                   max_seq_length = 64,
-                   train_batch_size = 32,
-                   learning_rate = 2e-5,
-                   output_mode='classification',
-                   warm_up_proportion=0.2,
-                   local_rank=-1,
-                   discriminate=True,
-                   gradual_unfreeze=True )
-```
-The last two parameters `discriminate` and `gradual_unfreeze` determine whether to apply the corresponding technique 
-against catastrophic forgetting.
+The repository can be extended with independently authored experiments, such as:
 
-## Getting predictions
-We provide a script to quickly get sentiment predictions using FinBERT. Given a .txt file, `predict.py` produces a .csv file including the sentences in the text, corresponding softmax probabilities for three labels, actual prediction and sentiment score (which is calculated with: probability of positive - probability of negative).
+- Comparing FinBERT sentiment with simple lexical sentiment baselines
+- Evaluating precision, recall, F1-score, and confusion matrices on a documented test set
+- Aggregating text sentiment into daily asset-level signals
+- Testing whether sentiment features add value in a properly time-ordered backtest
+- Recording data sources, preprocessing choices, and experiment settings for reproducibility
 
-Here's an example with the provided example text: `test.txt`. From the command line, simply run:
-```bash
-python scripts/predict.py --text_path test.txt --output_dir output/
-```
-By default this uses the `ProsusAI/finbert` model from Hugging Face. To use your own trained model, add
-`--model_path models/classifier_model/finbert-sentiment`.
+Any results added here should include the dataset, evaluation method, baseline, time period, and limitations. No performance claims are made until the experiments have been run and documented.
 
-## Disclaimer
-This is not an official Prosus product. It is the outcome of an intern research project in Prosus AI team.
-### About Prosus 
-Prosus is a global consumer internet group and one of the largest technology investors in the world. Operating and
- investing globally in markets with long-term growth potential, Prosus builds leading consumer internet companies that empower people and enrich communities.
-For more information, please visit [www.prosus.com](www.prosus.com).
+## Attribution and licensing
 
-## Contact information
-Please contact Dogu Araci `dogu.araci[at]prosus[dot]com` and Zulkuf Genc `zulkuf.genc[at]prosus[dot]com` about
- any FinBERT related issues and questions.
+This repository contains third-party work. The original FinBERT implementation and model are associated with Prosus AI and their respective contributors. See the original [ProsusAI/finBERT repository](https://github.com/ProsusAI/finBERT), its contributors, and the included `LICENSE` file for source-code terms.
+
+The upstream repository's licensing notice distinguishes the Apache-2.0-licensed code from pretrained model weights and datasets. The model weights and datasets may have separate terms; consult the [Hugging Face model card](https://huggingface.co/ProsusAI/finbert) and dataset terms before use or redistribution.
+
+Renaming this repository does not change ownership or authorship of upstream code, model weights, research, or datasets. Contributions made in this workspace should be described separately from inherited upstream material.
+
+## Maintainer
+
+Maintained as a personal financial machine-learning research workspace by [Asish Das](https://github.com/asishdas00).
+
