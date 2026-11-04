@@ -37,6 +37,7 @@ class HedgingEnv(gym.Env):
             raise ValueError("continuous inventory limit must allow a 1-share delta hedge")
         self._discrete_grid = np.linspace(-float(max_inventory), float(max_inventory), 9)
         self.cost_rate, self.max_inventory = float(transaction_cost), float(max_inventory)
+        self.inventory_scale = float(max_inventory)
         self.continuous = continuous
         self._seed = seed
 
@@ -59,8 +60,8 @@ class HedgingEnv(gym.Env):
             self.strike / self.spot0,
             tau / self.maturity,
             self.volatility,
-            self.inventory,
-            self.last_trade / self.max_inventory,
+            self.inventory / self.inventory_scale,
+            self.last_trade / self.inventory_scale,
         ], dtype=np.float32)
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
