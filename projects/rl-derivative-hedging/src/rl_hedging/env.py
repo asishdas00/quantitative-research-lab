@@ -36,7 +36,7 @@ class HedgingEnv(gym.Env):
         self.steps, self.dt = int(steps), float(maturity) / int(steps)
         if continuous and max_inventory < 1.0:
             raise ValueError("continuous inventory limit must allow a 1-share delta hedge")
-        self._discrete_grid = np.linspace(-float(max_inventory), float(max_inventory), 9)
+        self._discrete_grid = np.linspace(-float(max_inventory), float(max_inventory), self.discrete_inventory_levels)
         self.cost_rate, self.max_inventory = float(transaction_cost), float(max_inventory)
         self.inventory_scale = float(max_inventory)
         self.continuous = continuous
@@ -45,7 +45,7 @@ class HedgingEnv(gym.Env):
         self.action_space = (spaces.Box(low=np.array([-max_inventory], dtype=np.float32),
                                         high=np.array([max_inventory], dtype=np.float32),
                                         dtype=np.float32) if continuous
-                             else spaces.Discrete(9))
+                             else spaces.Discrete(self.discrete_inventory_levels))
         self.observation_space = spaces.Box(
             low=np.array([0.0, 0.0, 0.0, 0.0, -max_inventory, -1.0], dtype=np.float32),
             high=np.array([np.inf, np.inf, 1.0, np.inf, max_inventory, 1.0], dtype=np.float32),
@@ -86,7 +86,7 @@ class HedgingEnv(gym.Env):
         else:
             action_index = int(action)
             if not self.action_space.contains(action_index):
-                raise ValueError("discrete action must be an integer in [0, 8]")
+                raise ValueError(f"discrete action must be an integer in [0, {self.discrete_inventory_levels - 1}]")
             target = float(self._discrete_grid[action_index])
         return float(np.clip(target, -self.max_inventory, self.max_inventory))
 
