@@ -14,7 +14,7 @@ portfolio:
 environment:
   max_inventory: 2.0
   reward_scale: 1.0
-  discrete_actions:  nine
+  discrete_actions: 9
 experiment:
   seed: 7
   train_episodes: 5000
