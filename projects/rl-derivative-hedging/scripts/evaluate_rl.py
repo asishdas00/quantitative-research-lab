@@ -19,6 +19,7 @@ def main():
     parser.add_argument("--steps", type=int, default=30)
     parser.add_argument("--seed", type=int, default=100)
     parser.add_argument("--cost", type=float, default=0.001)
+    parser.add_argument("--max-inventory", type=float, default=2.0)
     args = parser.parse_args()
 
     from stable_baselines3 import PPO, SAC, DQN
@@ -32,7 +33,7 @@ def main():
             rows.append({"volatility": vol, "policy": policy,
                          **evaluate_rule(vol, paths, policy, args.cost)})
         rows.append({"volatility": vol, "policy": args.algo,
-                     **evaluate_model(model, paths, vol, args.cost)})
+                     **evaluate_model(model, paths, vol, args.cost, max_inventory=args.max_inventory)})
     out = Path("results")
     out.mkdir(exist_ok=True)
     frame = pd.DataFrame(rows)
