@@ -85,8 +85,7 @@ class HedgingEnv(gym.Env):
             action_index = int(action)
             if not self.action_space.contains(action_index):
                 raise ValueError("discrete action must be an integer in [0, 8]")
-            grid = np.linspace(-self.max_inventory, self.max_inventory, 9)
-            target = float(grid[action_index])
+            target = float(self._discrete_grid[action_index])
         return float(np.clip(target, -self.max_inventory, self.max_inventory))
 
     def step(self, action):
@@ -123,7 +122,7 @@ class HedgingEnv(gym.Env):
         target = call_delta(self.spot, self.strike, tau, self.rate,
                             self.volatility, self.dividend)
         return np.array([target], dtype=np.float32) if self.continuous else int(
-            np.argmin(np.abs(np.linspace(-self.max_inventory, self.max_inventory, 9) - target))
+            np.argmin(np.abs(self._discrete_grid - target))
         )
 
     def terminal_pnl(self) -> float:
