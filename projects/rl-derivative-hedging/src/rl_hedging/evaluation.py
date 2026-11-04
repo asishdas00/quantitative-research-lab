@@ -12,7 +12,8 @@ from .pricing import call_price
 
 def evaluate_model(model, paths: np.ndarray, volatility: float, transaction_cost: float,
                    rate: float = 0.0, strike: float = 100.0,
-                   maturity: float = 1.0, deterministic: bool = True) -> dict[str, float]:
+                   maturity: float = 1.0, max_inventory: float = 2.0,
+                   deterministic: bool = True) -> dict[str, float]:
     """Evaluate an SB3 model on fixed price paths; action sees current state only."""
     pnl_values, cost_values = [], []
     n_steps = paths.shape[1] - 1
@@ -25,14 +26,15 @@ def evaluate_model(model, paths: np.ndarray, volatility: float, transaction_cost
         for t in range(n_steps):
             tau = maturity - t * dt
             obs = np.array([path[t] / path[0], strike / path[0], tau / maturity,
-                            volatility, inventory, last_trade / 2.0], dtype=np.float32)
+                            volatility, inventory / max_inventory,
+                            last_trade / max_inventory], dtype=np.float32)
             action, _ = model.predict(obs, deterministic=deterministic)
             # SB3's DQN emits an integer; PPO/SAC emit a one-element float array.
             if np.isscalar(action) or np.asarray(action).ndim == 0:
-                grid = np.linspace(-2.0, 2.0, 9)
+                grid = np.linspace(-max_inventory, max_inventory, 9)
                 target = float(grid[int(action)])
             else:
-                target = float(np.clip(np.asarray(action).reshape(-1)[0], -2.0, 2.0))
+                target = float(np.clip(np.asarray(action).reshape(-1)[0], -max_inventory, max_inventory))
             trade = target - inventory
             cost = transaction_cost * path[t] * abs(trade)
             cash -= trade * path[t] + cost
