@@ -17,6 +17,7 @@ class HedgingEnv(gym.Env):
     """
 
     metadata = {"render_modes": []}
+    discrete_inventory_levels = 9
 
     def __init__(self, spot: float = 100.0, strike: float = 100.0,
                  maturity: float = 1.0, volatility: float = 0.20,
