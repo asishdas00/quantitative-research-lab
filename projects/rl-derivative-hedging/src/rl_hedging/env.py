@@ -103,8 +103,7 @@ class HedgingEnv(gym.Env):
         new_mark = self.cash + self.inventory * self.spot
         terminated = self.t >= self.steps
         payoff = max(self.spot - self.strike, 0.0) if terminated else 0.0
-        reward = (new_mark - old_mark) - transaction_cost - payoff
-        # Transaction cost is already included in cash/new_mark; remove duplicate subtraction.
+        # Transaction costs have already reduced cash, so they are included exactly once.
         reward = (new_mark - old_mark) - payoff
         self._terminated = terminated
         obs = self._obs()
