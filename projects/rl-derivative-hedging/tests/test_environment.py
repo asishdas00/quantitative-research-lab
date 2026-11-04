@@ -15,6 +15,18 @@ def test_environment_contract_and_termination():
     assert abs(total_reward - (env.terminal_pnl() - env.initial_premium)) < 1e-6
 
 
+def test_reward_ledger_reconciles_with_terminal_pnl():
+    env = HedgingEnv(steps=4, transaction_cost=0.002, seed=11)
+    obs, _ = env.reset(seed=11)
+    rewards = 0.0
+    actions = [0.5, 0.5, 0.25, 0.0]
+    for action in actions:
+        obs, reward, terminated, truncated, info = env.step(np.array([action], dtype=np.float32))
+        rewards += reward
+    assert terminated
+    assert abs(rewards - (env.terminal_pnl() - env.initial_premium)) < 1e-6
+
+
 def test_transaction_cost_is_charged_on_trade():
     env = HedgingEnv(steps=2, transaction_cost=0.01, seed=1)
     env.reset(seed=1)
