@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from .baselines import delta_target, no_hedge_target
-from .env import HedgingEnv
 from .metrics import summarize_pnl
 
 
