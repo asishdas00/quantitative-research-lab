@@ -33,6 +33,8 @@ class HedgingEnv(gym.Env):
         self.volatility, self.rate, self.dividend = float(volatility), float(rate), float(dividend)
         self.drift = float(rate if drift is None else drift)
         self.steps, self.dt = int(steps), float(maturity) / int(steps)
+        if continuous and max_inventory < 1.0:
+            raise ValueError("continuous inventory limit must allow a 1-share delta hedge")
         self.cost_rate, self.max_inventory = float(transaction_cost), float(max_inventory)
         self.continuous = continuous
         self._seed = seed
@@ -79,8 +81,11 @@ class HedgingEnv(gym.Env):
         if self.continuous:
             target = float(np.asarray(action, dtype=float).reshape(-1)[0])
         else:
+            action_index = int(action)
+            if not self.action_space.contains(action_index):
+                raise ValueError("discrete action must be an integer in [0, 8]")
             grid = np.linspace(-self.max_inventory, self.max_inventory, 9)
-            target = float(grid[int(action)])
+            target = float(grid[action_index])
         return float(np.clip(target, -self.max_inventory, self.max_inventory))
 
     def step(self, action):
